@@ -18,10 +18,21 @@ public class ClientHandler implements Runnable{
          */
         try {
             InputStream in = socket.getInputStream();
+            StringBuilder builder = new StringBuilder();
             int d;
+            char pre = ' ',cur = ' ';
             while((d=in.read())!=-1){
-                System.out.print((char)d);
+                cur = (char)d;
+                //CR=13,LF=10 (回车+换行)
+                if(pre==13&cur==10)
+                {
+                    break;
+                }
+                builder.append(cur);
+                pre = cur;
             }
+            String line = builder.toString().trim();
+            System.out.println(line);
         } catch (IOException e) {
             e.printStackTrace();
         }
