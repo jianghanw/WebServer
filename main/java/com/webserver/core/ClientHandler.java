@@ -1,9 +1,23 @@
 package com.webserver.core;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.Socket;
+import com.webserver.http.HttpServletRequest;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * This thread is responsible for doing the http interaction with the specified client
+ * and for each interaction, always follow the principle of one question and one answer,
+ * it consists of three step:
+ * 1. Parsing the request
+ * 2. handle the request
+ * 3. send the request
+ */
 public class ClientHandler implements Runnable{
     private Socket socket;
     public ClientHandler(Socket socket) {
@@ -17,24 +31,46 @@ public class ClientHandler implements Runnable{
          * 所以每个字符就是一个字节
          */
         try {
-            InputStream in = socket.getInputStream();
-            StringBuilder builder = new StringBuilder();
-            int d;
-            char pre = ' ',cur = ' ';
-            while((d=in.read())!=-1){
-                cur = (char)d;
-                //CR=13,LF=10 (回车+换行)
-                if(pre==13&cur==10)
+                //parse request
+                HttpServletRequest request = new HttpServletRequest(socket);
+                File file = new File(
+                        ClientHandler.class.getClassLoader().getResource(
+                                "./static/myweb/index.html"
+                        ).toURI()
+                );
+                String line = "HTTP/1.1 200 OK";
+                line = "Content-Type: text/html";
+                println(line);
+                line = "Content-Length: "+file.length();
+                println(line);
+                println("");
+                OutputStream out = socket.getOutputStream();
+                //send response content
+                //define cache 10k, speed up reading data
+                byte [] buf = new byte[10*1024];
+                int len;
+                FileInputStream fis = new FileInputStream(file);
+                while((len=fis.read(buf))!=-1)
                 {
-                    break;
+                    out.write(buf,0,len);
                 }
-                builder.append(cur);
-                pre = cur;
+                System.out.println("Response has been sent successfully!");
+            } catch (IOException | URISyntaxException e) {
+                e.printStackTrace();
+            }finally{
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-            String line = builder.toString().trim();
-            System.out.println(line);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    }
+
+    private void println(String line) throws IOException {
+        OutputStream out = socket.getOutputStream();
+        byte[] data = line.getBytes(StandardCharsets.ISO_8859_1);
+        out.write(data);
+        out.write(13);
+        out.write(10);
     }
 }
