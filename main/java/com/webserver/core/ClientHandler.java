@@ -1,14 +1,12 @@
 package com.webserver.core;
 
 import com.webserver.http.HttpServletRequest;
+import com.webserver.http.HttpServletResponse;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 
 /**
  * This thread is responsible for doing the http interaction with the specified client
@@ -33,29 +31,14 @@ public class ClientHandler implements Runnable{
         try {
                 //parse request
                 HttpServletRequest request = new HttpServletRequest(socket);
-                File file = new File(
-                        ClientHandler.class.getClassLoader().getResource(
-                                "./static/myweb/index.html"
-                        ).toURI()
-                );
-                String line = "HTTP/1.1 200 OK";
-                line = "Content-Type: text/html";
-                println(line);
-                line = "Content-Length: "+file.length();
-                println(line);
-                println("");
-                OutputStream out = socket.getOutputStream();
-                //send response content
-                //define cache 10k, speed up reading data
-                byte [] buf = new byte[10*1024];
-                int len;
-                FileInputStream fis = new FileInputStream(file);
-                while((len=fis.read(buf))!=-1)
-                {
-                    out.write(buf,0,len);
-                }
+                HttpServletResponse response = new HttpServletResponse(socket);
+                //handle the request
+                DispatcherServlet handler = new DispatcherServlet();
+                handler.service(request,response);
+                //send the response
+                response.response();
                 System.out.println("Response has been sent successfully!");
-            } catch (IOException | URISyntaxException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }finally{
                 try {
@@ -66,11 +49,4 @@ public class ClientHandler implements Runnable{
             }
     }
 
-    private void println(String line) throws IOException {
-        OutputStream out = socket.getOutputStream();
-        byte[] data = line.getBytes(StandardCharsets.ISO_8859_1);
-        out.write(data);
-        out.write(13);
-        out.write(10);
-    }
 }

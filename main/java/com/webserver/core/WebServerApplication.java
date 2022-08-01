@@ -26,12 +26,14 @@ public class WebServerApplication {
     public void start(){
 
         try {
-            System.out.println("Waiting for client connection...");
-            Socket socket = serverSocket.accept();
-            System.out.println("A client has been connected");
-            ClientHandler handler = new ClientHandler(socket);
-            Thread t = new Thread(handler);
-            t.start();
+            while(true) {
+                System.out.println("Waiting for client connection...");
+                Socket socket = serverSocket.accept();
+                System.out.println("A client has been connected");
+                ClientHandler handler = new ClientHandler(socket);
+                Thread t = new Thread(handler);
+                t.start();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
