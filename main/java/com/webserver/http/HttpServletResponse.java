@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static com.webserver.http.HttpContext.CR;
+import static com.webserver.http.HttpContext.LF;
+
 public class HttpServletResponse {
     private int statusCode = 200;
     private String statusReason = "OK";
@@ -64,8 +67,9 @@ public class HttpServletResponse {
         OutputStream out = socket.getOutputStream();
         byte[] data = line.getBytes(StandardCharsets.ISO_8859_1);
         out.write(data);
-        out.write(13);
-        out.write(10);
+        //回车加换行
+        out.write(CR);
+        out.write(LF);
     }
 
     public int getStatusCode() {
@@ -90,6 +94,12 @@ public class HttpServletResponse {
 
     public void setContentFile(File contentFile) {
         this.contentFile = contentFile;
+
+        String name = contentFile.getName();
+        String ext = name.substring(name.lastIndexOf(".")+1);
+        String mime = HttpContext.getMimetype(ext);
+        addHeader("Content-Type",mime);
+        addHeader("Content-Length",contentFile.length()+"");
     }
 
     public void addHeader(String name, String value){

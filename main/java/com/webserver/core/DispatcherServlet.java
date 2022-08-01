@@ -6,6 +6,7 @@ import com.webserver.http.HttpServletResponse;
 import java.io.File;
 import java.net.URISyntaxException;
 
+
 public class DispatcherServlet {
     private static File staticDir;
     static{

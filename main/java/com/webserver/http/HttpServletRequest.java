@@ -1,5 +1,8 @@
 package com.webserver.http;
 
+import static com.webserver.http.HttpContext.CR;
+import static com.webserver.http.HttpContext.LF;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
@@ -55,7 +58,7 @@ public class HttpServletRequest {
         while((d=in.read())!=-1){
             cur = (char)d;
             //CR=13,LF=10 (回车+换行)
-            if(pre==13&cur==10)
+            if(pre==CR&cur==LF)
             {
                 break;
             }
