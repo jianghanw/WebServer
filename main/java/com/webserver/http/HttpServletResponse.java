@@ -52,13 +52,15 @@ public class HttpServletResponse {
         OutputStream out = socket.getOutputStream();
         //send response content
         //define cache 10k, speed up reading data
-        byte [] buf = new byte[10*1024];
-        int len;
-        try (
-            FileInputStream fis = new FileInputStream(contentFile);
-        ) {
-            while ((len = fis.read(buf)) != -1) {
-                out.write(buf, 0, len);
+        if(contentFile!=null) {
+            byte[] buf = new byte[10 * 1024];
+            int len;
+            try (
+                    FileInputStream fis = new FileInputStream(contentFile);
+            ) {
+                while ((len = fis.read(buf)) != -1) {
+                    out.write(buf, 0, len);
+                }
             }
         }
     }

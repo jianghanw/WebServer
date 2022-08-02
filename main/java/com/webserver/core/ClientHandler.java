@@ -1,12 +1,11 @@
 package com.webserver.core;
 
+import com.webserver.http.EmptyRequestException;
 import com.webserver.http.HttpServletRequest;
 import com.webserver.http.HttpServletResponse;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.URISyntaxException;
 
 /**
  * This thread is responsible for doing the http interaction with the specified client
@@ -40,7 +39,9 @@ public class ClientHandler implements Runnable{
                 System.out.println("Response has been sent successfully!");
             } catch (IOException e) {
                 e.printStackTrace();
-            }finally{
+            } catch (EmptyRequestException e) {
+
+            } finally{
                 try {
                     socket.close();
                 } catch (IOException e) {

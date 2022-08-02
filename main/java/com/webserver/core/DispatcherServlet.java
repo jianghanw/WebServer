@@ -1,5 +1,6 @@
 package com.webserver.core;
 
+import com.webserver.controller.UserController;
 import com.webserver.http.HttpServletRequest;
 import com.webserver.http.HttpServletResponse;
 
@@ -21,18 +22,24 @@ public class DispatcherServlet {
         }
     }
     public void service(HttpServletRequest request, HttpServletResponse response){
-        String path = request.getUri();
+        String path = request.getRequestURI();
         System.out.println("The abstract path of the request: "+path);
-
-        File file= new File(staticDir,path);
-        if(file.isFile())
-        {
-            response.setContentFile(file);
+        if("/myweb/reg".equals(path)){
+            UserController controller = new UserController();
+            controller.reg(request,response);
         }else{
-            response.setStatusCode(404);
-            response.setStatusReason("Not Found");
-            file = new File(staticDir,"root/404.html");
-            response.setContentFile(file);
+            File file= new File(staticDir,path);
+            if(file.isFile())
+            {
+                response.setContentFile(file);
+            }else{
+                response.setStatusCode(404);
+                response.setStatusReason("Not Found");
+                file = new File(staticDir,"root/404.html");
+                response.setContentFile(file);
+            }
         }
+
+
     }
 }
