@@ -9,7 +9,7 @@ import java.net.Socket;
  * Webserver是一个Web容器，模拟Tomcat的基础功能
  * Web容器主要有两个任务：
  * 1. 管理部署在容器中的所有网络应用（webapp),每个网络应用俗称”网站“
- * 2、 负责与客户端完成TCP链接，并基于HTTP协议进行交互，使得客户端可以通过网络远程调用服务器中的某个资源
+ * 2、负责与客户端完成TCP链接，并基于HTTP协议进行交互，使得客户端可以通过网络远程调用服务器中的某个资源
  */
 public class WebServerApplication {
     private ServerSocket serverSocket;

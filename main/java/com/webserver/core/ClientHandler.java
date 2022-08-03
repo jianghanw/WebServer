@@ -28,7 +28,6 @@ public class ClientHandler implements Runnable{
          * 所以每个字符就是一个字节
          */
         try {
-                //parse request
                 HttpServletRequest request = new HttpServletRequest(socket);
                 HttpServletResponse response = new HttpServletResponse(socket);
                 //handle the request

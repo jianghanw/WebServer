@@ -24,10 +24,14 @@ public class DispatcherServlet {
     public void service(HttpServletRequest request, HttpServletResponse response){
         String path = request.getRequestURI();
         System.out.println("The abstract path of the request: "+path);
+        UserController controller = new UserController();
         if("/myweb/reg".equals(path)){
-            UserController controller = new UserController();
             controller.reg(request,response);
-        }else{
+        }
+        else if("/myweb/login".equals(path)){
+            controller.login(request,response);
+        }
+        else{
             File file= new File(staticDir,path);
             if(file.isFile())
             {

@@ -1,20 +1,29 @@
 package com.webserver.controller;
 
+import com.webserver.core.ClientHandler;
 import com.webserver.entity.User;
 import com.webserver.http.HttpServletRequest;
 import com.webserver.http.HttpServletResponse;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
+import java.net.URISyntaxException;
 
 public class UserController {
 
     private static File USER_DIR = new File("./users");
+    private static File staticDir;
     static{
         if(!USER_DIR.exists()){
             USER_DIR.mkdirs();
+        }
+        try {
+            staticDir = new File(
+                    ClientHandler.class.getClassLoader().getResource(
+                            "./static"
+                    ).toURI()
+            );
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
         }
     }
 
@@ -25,21 +34,69 @@ public class UserController {
         String nickname = request.getParams("nickname");
         String ageStr = request.getParams("age");
         System.out.println(username+","+password+","+nickname+","+ageStr);
-
+        if(username==null||password==null||nickname==null||ageStr==null||!ageStr.matches("[0-9]+")){
+            File file = new File(staticDir, "/myweb/reg_fail.html");
+            response.setContentFile(file);
+            return;
+        }
         //use User instance to represent user info, and serialize to the file
         int age = Integer.parseInt(ageStr);
         User user = new User(username,password,nickname,age);
         File userFile = new File(USER_DIR, username + ".obj");
+        if(userFile.exists()){
+            File file = new File(staticDir,"/myweb/have_user.html");
+            response.setContentFile(file);
+            return;
+        }
         try(
                 FileOutputStream fos = new FileOutputStream((userFile));
+                //为了方便写对象，我们串联了一个序列化（对象输出流）
                 ObjectOutputStream oos = new ObjectOutputStream(fos);
         ){
             //serialize the user object to userFile
             oos.writeObject(user);
+            File file = new File(staticDir, "/myweb/reg_success.html");
+            response.setContentFile(file);
         }catch(IOException e){
-
+            
         }
         System.out.println("Finished processing user registration!!");
+    }
 
+    public void login(HttpServletRequest request, HttpServletResponse response){
+        System.out.println("Start processing user login...");
+        String username = request.getParams("username");
+        String password = request.getParams("password");
+        System.out.println(username+","+password);
+        if(username==null||password==null){
+            File file = new File(staticDir, "/myweb/login_info_error.html");
+            response.setContentFile(file);
+            return;
+        }
+        File userFile = new File(USER_DIR, username + ".obj");
+        File file = null;
+        if(!userFile.exists())
+        {
+            file = new File(staticDir,"/myweb/login_fail.html");
+            response.setContentFile(file);
+            return;
+        }
+        try {
+            FileInputStream fis = new FileInputStream(userFile);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            User user = (User)(ois.readObject());
+            if(user.getPassword().equals(password))
+            {
+                file = new File(staticDir,"/myweb/login_success.html");
+            }
+            else
+            {
+                file = new File(staticDir,"/myweb/login_fail.html");
+            }
+            response.setContentFile(file);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Finished processing user Login!!");
     }
 }
