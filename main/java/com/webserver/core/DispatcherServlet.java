@@ -31,6 +31,9 @@ public class DispatcherServlet {
         else if("/myweb/login".equals(path)){
             controller.login(request,response);
         }
+        else if("/myweb/showAllUser".equals(path)){
+            controller.showAllUser(request,response);
+        }
         else{
             File file= new File(staticDir,path);
             if(file.isFile())

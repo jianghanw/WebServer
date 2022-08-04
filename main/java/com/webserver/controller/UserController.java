@@ -7,6 +7,7 @@ import com.webserver.http.HttpServletResponse;
 
 import java.io.*;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 public class UserController {
 
@@ -98,5 +99,41 @@ public class UserController {
             e.printStackTrace();
         }
         System.out.println("Finished processing user Login!!");
+    }
+
+    public void showAllUser(HttpServletRequest request, HttpServletResponse response){
+        System.out.println("Start generating dynamic page...");
+        ArrayList<User> userList = new ArrayList<>();
+        File[] subs = USER_DIR.listFiles(f->f.getName().endsWith(".obj"));
+        for(File userFile:subs)
+        {
+            try {
+                FileInputStream fis = new FileInputStream(userFile);
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                userList.add((User)(ois.readObject()));
+            } catch (IOException | ClassNotFoundException  e) {
+                e.printStackTrace();
+            }
+        }
+        PrintWriter pw = response.getWriter();
+        pw.println("<!DOCTYPE html>");
+        pw.println("<html lang=\"en\">");
+        pw.println("<head>");
+        pw.println("<meta charset=\"UTF-8\">");
+        pw.println("<title>Userlist</title>");
+        pw.println("</head>");
+        pw.println("<body>");
+        pw.println("<h2>User list</h2>");
+        pw.println("<ol>");
+        for(User user:userList)
+        {
+            pw.println("<li>"+user.getUsername()+"</li>");
+        }
+        pw.println("</ol>");
+        pw.println("</body>");
+        pw.println("</html>");
+        //set Content-Type
+        response.setContentType("text/html");
+        System.out.println("Generating dynamic page completed!");
     }
 }

@@ -5,7 +5,10 @@ import static com.webserver.http.HttpContext.LF;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,16 +51,25 @@ public class HttpServletRequest {
         requestURI  = arr[0];
         if(arr.length>1){
             queryString = arr[1];
-            arr = queryString.split("&");
-            for(String s: arr)
-            {
-                String [] param = s.split("=");
-                params.put(param[0],param.length>1?param[1]:null);
-            }
+            parseParams(queryString);
         }
         System.out.println("Request part: "+requestURI);
         System.out.println("Parameter part: "+queryString);
-        System.out.println("");
+        System.out.println("Parameter Map:"+params);
+    }
+
+    private void parseParams(String line){
+        try {
+            line = URLDecoder.decode(line,"UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        String [] arr = line.split("&");
+        for(String s: arr)
+        {
+            String [] param = s.split("=");
+            params.put(param[0],param.length>1?param[1]:null);
+        }
     }
 
     private void parseRequestHeaders() throws IOException {
@@ -73,7 +85,21 @@ public class HttpServletRequest {
         }
         System.out.println("Headers array: "+headers);
     }
-    private void parseContent(){
+    private void parseContent() throws IOException {
+        System.out.println("Start parsing content...");
+        if(headers.containsKey("Content-Length")){
+            int contentLength = Integer.parseInt(headers.get("Content-Length"));
+            System.out.println("The length of the request content:"+contentLength);
+            byte[] contentData = new byte[contentLength];
+            InputStream in = socket.getInputStream();
+            in.read(contentData);
+            String contentType = headers.get("Content-Type");
+            if("application/x-www-form-urlencoded".equals(contentType)){
+                String line = new String(contentData, StandardCharsets.ISO_8859_1);
+                System.out.println("The request content: "+line);
+                parseParams(line);
+            }
+        }
 
     }
     private String readLine() throws IOException {

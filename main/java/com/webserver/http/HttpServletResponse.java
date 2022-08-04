@@ -16,8 +16,9 @@ public class HttpServletResponse {
     private Socket socket;
     //response header info
     private Map<String,String> headers = new HashMap<>();
+    private byte[] contentData;
     private File contentFile;
-
+    private ByteArrayOutputStream baos;
     public HttpServletResponse(Socket socket){
         this.socket = socket;
     }
@@ -27,9 +28,16 @@ public class HttpServletResponse {
      * send back the response object following the response format
      */
     public void response() throws IOException {
+        preCheck();
         sendStatusLine();
         sendHeaders();
         sendContent();
+    }
+    private void preCheck(){
+        if(baos!=null){
+             contentData = baos.toByteArray();//get the byte array from baos
+            addHeader("Content-Length",contentData.length+"");
+        }
     }
     private void sendStatusLine() throws IOException {
         String line = "HTTP/1.1"+" "+statusCode+" "+statusReason;
@@ -50,9 +58,12 @@ public class HttpServletResponse {
 
     private void sendContent() throws IOException {
         OutputStream out = socket.getOutputStream();
+        if(contentData!=null){ //has dynamic data
+            out.write(contentData);
+        }
         //send response content
         //define cache 10k, speed up reading data
-        if(contentFile!=null) {
+        else if(contentFile!=null) {
             byte[] buf = new byte[10 * 1024];
             int len;
             try (
@@ -106,5 +117,28 @@ public class HttpServletResponse {
 
     public void addHeader(String name, String value){
         this.headers.put(name,value);
+    }
+
+    public OutputStream getOutputStream() {
+        //prevent baos object from creating multiple times
+        if(baos==null){
+            baos = new ByteArrayOutputStream();
+        }
+        return baos;
+    }
+
+    public PrintWriter getWriter(){
+        return new PrintWriter(
+                new BufferedWriter(
+                new OutputStreamWriter(
+                        getOutputStream(),
+                        StandardCharsets.UTF_8
+                )
+            )
+        ,true);
+    }
+
+    public void setContentType(String mime){
+        addHeader("Content-Type",mime);
     }
 }
