@@ -8,26 +8,15 @@ import com.webserver.http.HttpServletRequest;
 import com.webserver.http.HttpServletResponse;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 @Controller
 public class UserController {
 
     private static File USER_DIR = new File("./users");
-    private static File staticDir;
     static{
         if(!USER_DIR.exists()){
             USER_DIR.mkdirs();
-        }
-        try {
-            staticDir = new File(
-                    ClientHandler.class.getClassLoader().getResource(
-                            "./static"
-                    ).toURI()
-            );
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
         }
     }
 
@@ -40,8 +29,9 @@ public class UserController {
         String ageStr = request.getParams("age");
         System.out.println(username+","+password+","+nickname+","+ageStr);
         if(username==null||password==null||nickname==null||ageStr==null||!ageStr.matches("[0-9]+")){
-            File file = new File(staticDir, "/myweb/reg_fail.html");
-            response.setContentFile(file);
+            //File file = new File(staticDir, "/myweb/reg_fail.html");
+            //response.setContentFile(file);
+            response.sendRedirect("/myweb/reg_fail.html");
             return;
         }
         //use User instance to represent user info, and serialize to the file
@@ -49,8 +39,9 @@ public class UserController {
         User user = new User(username,password,nickname,age);
         File userFile = new File(USER_DIR, username + ".obj");
         if(userFile.exists()){
-            File file = new File(staticDir,"/myweb/have_user.html");
-            response.setContentFile(file);
+            //File file = new File(staticDir,"/myweb/have_user.html");
+            //response.setContentFile(file);
+            response.sendRedirect("/myweb/have_user.html");
             return;
         }
         try(
@@ -60,8 +51,9 @@ public class UserController {
         ){
             //serialize the user object to userFile
             oos.writeObject(user);
-            File file = new File(staticDir, "/myweb/reg_success.html");
-            response.setContentFile(file);
+            //File file = new File(staticDir, "/myweb/reg_success.html");
+            //response.setContentFile(file);
+            response.sendRedirect("/myweb/reg_success.html");
         }catch(IOException e){
             
         }
@@ -75,16 +67,20 @@ public class UserController {
         String password = request.getParams("password");
         System.out.println(username+","+password);
         if(username==null||password==null){
+            /*
             File file = new File(staticDir, "/myweb/login_info_error.html");
             response.setContentFile(file);
+             */
+            response.sendRedirect("/myweb/login_info_error.html");
             return;
         }
         File userFile = new File(USER_DIR, username + ".obj");
         File file = null;
         if(!userFile.exists())
         {
-            file = new File(staticDir,"/myweb/login_fail.html");
-            response.setContentFile(file);
+            //file = new File(staticDir,"/myweb/login_fail.html");
+            //response.setContentFile(file);
+            response.sendRedirect("/myweb/login_fail.html");
             return;
         }
         try {
@@ -93,13 +89,15 @@ public class UserController {
             User user = (User)(ois.readObject());
             if(user.getPassword().equals(password))
             {
-                file = new File(staticDir,"/myweb/login_success.html");
+                //file = new File(staticDir,"/myweb/login_success.html");
+                response.sendRedirect("/myweb/login_success.html");
             }
             else
             {
-                file = new File(staticDir,"/myweb/login_fail.html");
+                //file = new File(staticDir,"/myweb/login_fail.html");
+                response.sendRedirect("/myweb/login_fail.html");
             }
-            response.setContentFile(file);
+            //response.setContentFile(file);
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }

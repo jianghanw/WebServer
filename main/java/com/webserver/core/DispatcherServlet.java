@@ -1,8 +1,5 @@
 package com.webserver.core;
 
-import com.webserver.annotation.Controller;
-import com.webserver.annotation.RequestMapping;
-import com.webserver.controller.UserController;
 import com.webserver.http.HttpServletRequest;
 import com.webserver.http.HttpServletResponse;
 
@@ -27,41 +24,16 @@ public class DispatcherServlet {
     public void service(HttpServletRequest request, HttpServletResponse response){
         String path = request.getRequestURI();
         System.out.println("The abstract path of the request: "+path);
-        UserController controller = new UserController();
-        try {
-            /**
-             * DispatcherServlet.class.getClassLoader().getResource(".").toURI()
-             *   located the dir which is target/classes
-             * DispatcherServlet.class.getResource(".").toURI()
-             * located the dir which is target/classes/com/webserver/core
-             */
-            File dir = new File(
-                    DispatcherServlet.class.getClassLoader().getResource("./com/webserver/controller").toURI()
-            );
-            File[] subs = dir.listFiles(f->f.getName().endsWith(".class"));
-            for(File sub:subs){
-                String fileName = sub.getName();
-                String className = fileName.substring(0,fileName.indexOf('.'));
-                Class cls = Class.forName("com.webserver.controller."+className);
-                if(cls.isAnnotationPresent(Controller.class))
-                {
-                    Method[] methods = cls.getDeclaredMethods();
-                    for(Method method:methods){
-                        if(method.isAnnotationPresent(RequestMapping.class)){
-                            RequestMapping rm = method.getAnnotation(RequestMapping.class);
-                            String value = rm.value();
-                            if(path.equals(value)){
-                                Object o = cls.newInstance();
-                                method.invoke(o,request,response);
-                                return;
-                            }
-
-                        }
-                    }
-                }
+        HandlerMapping.MethodMapping methodMapping = HandlerMapping.getMethod(path);
+        if(methodMapping!=null){
+            Object controller = methodMapping.getController();
+            Method method = methodMapping.getMethod();
+            try {
+                method.invoke(controller,request,response);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        }catch(Exception e){
-            e.printStackTrace();
+            return;
         }
         File file= new File(staticDir,path);
         if(file.isFile())

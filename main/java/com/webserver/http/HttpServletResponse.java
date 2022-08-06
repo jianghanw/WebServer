@@ -141,4 +141,11 @@ public class HttpServletResponse {
     public void setContentType(String mime){
         addHeader("Content-Type",mime);
     }
+
+    public void sendRedirect(String uri){
+        statusCode = 302;
+        statusReason = "Moved Temporarily";
+        addHeader("Location",uri);
+    }
+
 }
