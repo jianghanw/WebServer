@@ -1,5 +1,7 @@
 package com.webserver.controller;
 
+import com.webserver.annotation.Controller;
+import com.webserver.annotation.RequestMapping;
 import com.webserver.core.ClientHandler;
 import com.webserver.entity.User;
 import com.webserver.http.HttpServletRequest;
@@ -9,6 +11,7 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
+@Controller
 public class UserController {
 
     private static File USER_DIR = new File("./users");
@@ -28,6 +31,7 @@ public class UserController {
         }
     }
 
+    @RequestMapping("/myweb/reg")
     public void reg(HttpServletRequest request, HttpServletResponse response){
         System.out.println("Start processing user registration...");
         String username = request.getParams("username");
@@ -64,6 +68,7 @@ public class UserController {
         System.out.println("Finished processing user registration!!");
     }
 
+    @RequestMapping("/myweb/login")
     public void login(HttpServletRequest request, HttpServletResponse response){
         System.out.println("Start processing user login...");
         String username = request.getParams("username");
@@ -101,6 +106,7 @@ public class UserController {
         System.out.println("Finished processing user Login!!");
     }
 
+    @RequestMapping("/myweb/showAllUser")
     public void showAllUser(HttpServletRequest request, HttpServletResponse response){
         System.out.println("Start generating dynamic page...");
         ArrayList<User> userList = new ArrayList<>();
